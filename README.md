@@ -14,4 +14,4 @@ MVTec Anomaly Detection Dataset
 
 ## Setup
 
-pip install -r requirements.txt
+pip install -r requirements.tx
