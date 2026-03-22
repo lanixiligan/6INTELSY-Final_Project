@@ -1,6 +1,8 @@
 torch
 torchvision
+numpy
 scikit-learn
 matplotlib
+transformers
+pandas
 pillow
-kaggle

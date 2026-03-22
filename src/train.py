@@ -1,32 +1,44 @@
 import torch
-import torch.nn as nn
 import torch.optim as optim
-from model import get_model
-from dataset import get_loaders
+from src.dataset import get_dataloaders
+from src.model import BottleCNN
+from sklearn.linear_model import LogisticRegression
+import os
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def train():
+    os.makedirs("experiments/logs", exist_ok=True)
+    # Correct path based on your folder structure
+    data_path = "data/mvtec/bottle" 
+    
+    if not os.path.exists(data_path):
+        print(f"❌ Error: {data_path} not found. Check your manual download.")
+        return
 
-train_loader, _ = get_loaders("data/mvtec/bottle")
+    train_loader, val_loader = get_dataloaders(data_path)
 
-model = get_model().to(device)
+    # --- Baseline ---
+    imgs, labels = next(iter(train_loader))
+    X_flat = imgs.view(imgs.size(0), -1).numpy()
+    clf = LogisticRegression(max_iter=50).fit(X_flat, labels.numpy())
+    acc = clf.score(X_flat, labels.numpy())
+    with open("experiments/logs/baseline_results.txt", "w") as f:
+        f.write(f"Simple ML Baseline Accuracy: {acc:.4f}")
 
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+    # --- CNN ---
+    model = BottleCNN()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    criterion = torch.nn.CrossEntropyLoss()
 
-for epoch in range(2):
-    total_loss = 0
+    print("Training Bottle CNN...")
+    model.train()
     for images, labels in train_loader:
-        images, labels = images.to(device), labels.to(device)
-
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-
         optimizer.zero_grad()
+        loss = criterion(model(images), labels)
         loss.backward()
         optimizer.step()
+    
+    torch.save(model.state_dict(), "model.pth")
+    print("✅ model.pth saved and metrics logged.")
 
-        total_loss += loss.item()
-
-    print(f"Epoch {epoch+1}: {total_loss:.4f}")
-
-torch.save(model.state_dict(), "model.pth")
+if __name__ == "__main__":
+    train()
