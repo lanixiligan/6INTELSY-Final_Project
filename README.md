@@ -1,5 +1,11 @@
 # Manufacturing Defect Detection using CNN
 
+# Group Members
+- Iligan, Lanix 
+- Wylengco, Teyshaun Zell
+- Bongon, Joshwell
+- Sampang, Denzel
+
 ## Description
 This project builds a CNN-based system for detecting manufacturing defects using industrial images.
 
